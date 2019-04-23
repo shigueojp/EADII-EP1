@@ -9,30 +9,29 @@ typedef struct prim
 {
     int vertices;
     int arestas;
-    float **grafo; // grafo com ate max_vertices quantidades de vertices
+    float **grafo;
     int max_vertices;
     int infinito;
-    int custo_minimo; // custo minimo do grafo
+    int custo_minimo;
+    int contador;
 } PRIM;
 
 void startPrim(PRIM *prim, int qtd_max_vertices, char *entradaArquivo);
 
-/* Funcao qual ira alocar o grafo. */
+/* Aloca o grafo. */
 void alocar_grafo(PRIM *prim);
 
-/* Funcao qual ira liberar o grafo. */
+/* Libera o grafo. */
 void liberar_grafo(PRIM *prim);
 
-/* Funcao qual ira fazer o calculo do custo minimo no grafo. */
+/* Calculo do custo minimo no grafo. */
 void calcular_custo_minimo(PRIM *prim, char *arquivoSaida);
 
-/* Funcao qual ira calcuar o custo minimo no grafo de acordo com o
- * algoritmo de Prim. 
- */
-void mostrar_custo_minimo(PRIM *prim, char *arquivoSaida);
-
-/* Funcao qual ira verificar se o arquivo ".txt" carregado esta vazio */
+/* Verificar se o arquivo ".txt" carregado esta vazio */
 int verificar_arquivo_vazio(PRIM *prim, char *entradaArquivo);
+
+/* Valida vertices caso seja negativo ou nao exista*/
+void validaVertices(PRIM *prim, int m, int n, int peso);
 
 void startPrim(PRIM *prim, int maxVertices, char *entradaArquivo)
 {
@@ -42,6 +41,7 @@ void startPrim(PRIM *prim, int maxVertices, char *entradaArquivo)
     arquivo = fopen(entradaArquivo, "r");
     prim->max_vertices = maxVertices;
     prim->infinito = 9999; // valor que significa infinito
+    prim->contador = 0;
 
     if (arquivo == NULL)
     {
@@ -49,7 +49,6 @@ void startPrim(PRIM *prim, int maxVertices, char *entradaArquivo)
         exit(0);
     }
 
-    // verifica se o arquivo esta vazio
     if (verificar_arquivo_vazio(prim, entradaArquivo) == 0)
     {
         printf("Erro! O arquivo %s esta vazio!\n", entradaArquivo);
@@ -66,12 +65,28 @@ void startPrim(PRIM *prim, int maxVertices, char *entradaArquivo)
         exit(0);
     }
 
+    //Aloca o grafo com malloc
     alocar_grafo(prim);
 
-    for (i = 2; i < (prim->arestas + 2); i++)
+    //Pegando os dados dos vertices e peso
+    for (i = 0; i < prim->arestas; i++)
     {
         fscanf(arquivo, "%d %d %d", &m, &n, &peso);
-        if (peso < 0)
+
+        //Validando Vertices
+        validaVertices(prim, m, n, peso);
+
+        //Grafo não direcionado
+        prim->grafo[m][n] = peso;
+        prim->grafo[n][m] = peso;
+    }
+
+    fclose(arquivo);
+}
+
+void validaVertices(PRIM *prim, int m, int n, int peso)
+{
+    if (peso < 0)
         {
             printf("Erro! Nao pode existem peso negativo!\n");
             exit(0);
@@ -86,12 +101,6 @@ void startPrim(PRIM *prim, int maxVertices, char *entradaArquivo)
             printf("Erro! O vertice %d nao existe!\n", n);
             exit(0);
         }
-
-        prim->grafo[m][n] = peso;
-        prim->grafo[n][m] = peso;
-    }
-
-    fclose(arquivo);
 }
 
 void alocar_grafo(PRIM *prim)
@@ -122,6 +131,7 @@ void alocar_grafo(PRIM *prim)
         }
     }
 
+    //Setando todos os vertices com valor infinito
     for (i = 0; i < prim->vertices; i++)
     {
         for (j = 0; j < prim->vertices; j++)
@@ -133,17 +143,11 @@ void alocar_grafo(PRIM *prim)
 
 void calcular_custo_minimo(PRIM *prim, char *arquivoSaida)
 {
-    mostrar_custo_minimo(prim, arquivoSaida);
-    //mostrar_ordem_vertices(prim);
-}
-
-void mostrar_custo_minimo(PRIM *prim, char *arquivoSaida)
-{
     int i, j;
     int ordem[prim->vertices * 2];
     int visitados[prim->vertices];
     int minimo = prim->infinito;
-    int u = 0, v = 0, total = 0, contador = 0;
+    int u = 0, v = 0, total = 0;
     int esta_rodando = 1;
     FILE *arquivo;
     arquivo = fopen(arquivoSaida, "w");
@@ -161,16 +165,15 @@ void mostrar_custo_minimo(PRIM *prim, char *arquivoSaida)
         //Percorre todos os vertices
         for (i = 0; i < prim->vertices; i++)
         {
-            //Escolhe o vertice que foi explorado anteriormente.
+            //Percorre todos os vertice que ja foram visitados.
             if (visitados[i] != -1)
             {
-                //Percorre todos os vertices que estao ligadas ao vertice atual
+                //Percorre todos os vertices que estao ligadas ao vertice i
                 //Os vertices sem ligacao tem valor infinito
                 for (j = 0; j < prim->vertices; j++)
                 {
-                    //Verifica se o vertice adjacente é novo
-                    //Verifica se o peso do grafo é maior que o atual,
-                    //sendo atual na primeira vez um numero infinito
+                    /*Verifica se o vertice adjacente é novo
+                    Verifica se o peso do grafo é maior que o atual, sendo atual SEMPRE na primeira vez um numero infinito */
 
                     printf("Estou no vertice:%d buscando meus vizinhos:\n", i);
                     printf("        J:%d VISITADOS[J]:%d\n", j, visitados[j]);
@@ -178,7 +181,6 @@ void mostrar_custo_minimo(PRIM *prim, char *arquivoSaida)
                     if (visitados[j] == -1 && minimo > prim->grafo[i][j])
                     {
                         printf("Vertice menor encontrado: Prim->Grafo[%d][%d]:\n", i, j);
-                        //Valor do vertice minimo
                         minimo = prim->grafo[i][j];
                         printf("        minimo[%d][%d]: %d\n", i, j, minimo);
                         u = i;
@@ -187,7 +189,7 @@ void mostrar_custo_minimo(PRIM *prim, char *arquivoSaida)
                 }
             }
         }
-
+        
         if (minimo == prim->infinito)
         {
             esta_rodando = 0; // fim do laco
@@ -195,23 +197,22 @@ void mostrar_custo_minimo(PRIM *prim, char *arquivoSaida)
         }
 
         visitados[v] = u;
-        ordem[contador] = u;
-        ordem[contador+1] = v;
-        contador = contador + 2;
+        ordem[prim->contador] = u;
+        ordem[prim->contador + 1] = v;
+        prim->contador += 2;
         printf("\n\n\nV:%d VISITADOS[V]:%d\n", v, visitados[v]);
         total += minimo;
-
-        //fprintf(arquivo, "%d %d\n", u, v);
     }
+
     prim->custo_minimo = total;
-    printf("%d\n", prim->custo_minimo);
+    
+    fprintf(arquivo, "%d\n", prim->custo_minimo);
 
-    fprintf(arquivo, "%d\n", prim->custo_minimo); // salva informacoes no arquivo prim->arquivo_saida
-
-    for (int i = 0; i < contador; i=i+2)
+    for (int i = 0; i < prim->contador; i = i + 2)
     {
-        fprintf(arquivo, "%d %d\n", ordem[i], ordem[i+1]);
+        fprintf(arquivo, "%d %d\n", ordem[i], ordem[i + 1]);
     }
+
     fclose(arquivo);
 }
 

@@ -18,19 +18,19 @@ typedef struct prim
 
 void startPrim(PRIM *prim, int qtd_max_vertices, char *entradaArquivo);
 
-/* Aloca o grafo. */
+// Aloca o grafo
 void alocaGrafo(PRIM *prim);
 
-/* Libera o grafo. */
+// Libera o grafo 
 void liberarGrafo(PRIM *prim);
 
-/* Calculo do custo minimo no grafo. */
+// Calculo do custo minimo no grafo
 void algPrim(PRIM *prim, char *arquivoSaida);
 
-/* Verificar se o arquivo ".txt" carregado esta vazio */
+// Verificar se o arquivo ".txt" carregado esta vazio 
 bool isVazio(PRIM *prim, char *entradaArquivo);
 
-/* Valida vertices caso seja negativo ou nao exista*/
+// Valida vertices caso seja negativo ou nao exista
 void validaVertices(PRIM *prim, int m, int n, int peso);
 
 void startPrim(PRIM *prim, int maxVertices, char *entradaArquivo)
@@ -45,13 +45,13 @@ void startPrim(PRIM *prim, int maxVertices, char *entradaArquivo)
 
     if (arquivo == NULL)
     {
-        printf("Erro! O arquivo nao existe!\n");
+        printf("Erro: O arquivo nao existe!\n");
         exit(0);
     }
 
     if (isVazio(prim, entradaArquivo))
     {
-        printf("Erro! O arquivo %s esta vazio!\n", entradaArquivo);
+        printf("Erro: O arquivo %s esta vazio!\n", entradaArquivo);
         exit(0);
     }
 
@@ -61,7 +61,7 @@ void startPrim(PRIM *prim, int maxVertices, char *entradaArquivo)
     // verifica se existem vertices
     if (prim->vertices == 0)
     {
-        printf("Erro! Nao existe vertices!\n");
+        printf("Erro: Nao existe vertices!\n");
         exit(0);
     }
 
@@ -88,17 +88,17 @@ void validaVertices(PRIM *prim, int m, int n, int peso)
 {
     if (peso < 0)
     {
-        printf("Erro! Nao pode existir peso negativo!\n");
+        printf("Erro: Nao pode existir peso negativo!\n");
         exit(0);
     }
     if (m >= prim->vertices || m < 0)
     {
-        printf("Erro! O vertice %d nao existe!\n", m);
+        printf("Erro: O vertice %d nao existe!\n", m);
         exit(0);
     }
     if (n >= prim->vertices || n < 0)
     {
-        printf("Erro! O vertice %d nao existe!\n", n);
+        printf("Erro: O vertice %d nao existe!\n", n);
         exit(0);
     }
 }
@@ -108,7 +108,7 @@ void alocaGrafo(PRIM *prim)
     int i, j;
     if (prim->vertices > prim->max_vertices)
     {
-        printf("Erro! Impossivel alocar um grafo com mais de %d vertices!\n", prim->max_vertices);
+        printf("Erro: Impossivel alocar um grafo com mais de %d vertices!\n", prim->max_vertices);
         exit(0);
     }
 
@@ -174,15 +174,9 @@ void algPrim(PRIM *prim, char *arquivoSaida)
                 {
                     /*Verifica se o vertice adjacente é novo
                     Verifica se o peso do grafo é maior que o atual, sendo atual SEMPRE na primeira vez um numero infinito */
-
-                    printf("Estou no vertice:%d buscando meus vizinhos:\n", i);
-                    printf("        J:%d VISITADOS[J]:%d\n", j, visitados[j]);
-                    printf("        Prim->Grafo[%d][%d]: %f\n", i, j, prim->grafo[i][j]);
                     if (visitados[j] == -1 && minimo > prim->grafo[i][j])
                     {
-                        printf("Vertice menor encontrado: Prim->Grafo[%d][%d]:\n", i, j);
                         minimo = prim->grafo[i][j];
-                        printf("        minimo[%d][%d]: %d\n", i, j, minimo);
                         u = i;
                         v = j;
                     }
@@ -192,7 +186,7 @@ void algPrim(PRIM *prim, char *arquivoSaida)
 
         if (minimo == prim->infinito)
         {
-            esta_rodando = 0; // fim do laco
+            esta_rodando = 0; 
             break;
         }
 
@@ -203,7 +197,6 @@ void algPrim(PRIM *prim, char *arquivoSaida)
         ordem[prim->contador + 1] = v;
         prim->contador += 2;
 
-        printf("\n\n\nV:%d VISITADOS[V]:%d\n", v, visitados[v]);
         total += minimo;
     }
 
@@ -241,7 +234,7 @@ void liberarGrafo(PRIM *prim)
     int i;
     if (prim->grafo == NULL)
     {
-        printf("Erro! Grafo nao existe!\n");
+        printf("Erro: Grafo nao existe!\n");
         exit(0);
     }
     for (i = 0; i < prim->vertices; i++)
